@@ -113,7 +113,7 @@ class _ItemsTabState extends State<ItemsTab> {
                 rows: [
                   for (int i = 0; i < data.docs.length; i++)
                     DataRow(
-                      color: MaterialStateColor.resolveWith((states) =>
+                      color: WidgetStateColor.resolveWith((states) =>
                           i % 2 == 0 ? Colors.white : Colors.grey[200]!),
                       cells: [
                         DataCell(
@@ -132,7 +132,7 @@ class _ItemsTabState extends State<ItemsTab> {
                         ),
                         DataCell(
                           TextWidget(
-                              text: data.docs[i]['required_points'].toString(),
+                              text: data.docs[i]['points'].toString(),
                               fontSize: 14,
                               fontFamily: 'Medium',
                               color: Colors.grey),
@@ -148,7 +148,7 @@ class _ItemsTabState extends State<ItemsTab> {
                           Row(
                             children: [
                               ButtonWidget(
-                                color: Color.fromARGB(206, 70, 228, 131),
+                                color: const Color.fromARGB(206, 70, 228, 131),
                                 height: 35,
                                 width: 125,
                                 label: 'Add',
@@ -214,7 +214,7 @@ class AddItemDialog extends StatelessWidget {
   final TextEditingController name;
   final TextEditingController pts;
 
-  AddItemDialog({required this.name, required this.pts});
+  const AddItemDialog({super.key, required this.name, required this.pts});
 
   @override
   Widget build(BuildContext context) {
@@ -238,7 +238,7 @@ class AddItemDialog extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               ButtonWidget(
-                color: Color.fromARGB(255, 185, 245, 33),
+                color: const Color.fromARGB(255, 185, 245, 33),
                 height: 45,
                 width: 150,
                 label: 'Add',
@@ -271,7 +271,8 @@ class EditItemDialog extends StatelessWidget {
   final TextEditingController pts;
   final String itemId;
 
-  EditItemDialog({
+  const EditItemDialog({
+    super.key,
     required this.name,
     required this.pts,
     required this.itemId,
