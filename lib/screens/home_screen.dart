@@ -2,11 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_bar_code_scanner_dialog/qr_bar_code_scanner_dialog.dart';
-import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
-
 import 'package:smart_waste_web/screens/login_screen.dart';
 import 'package:smart_waste_web/screens/tabs/items_tab.dart';
 import 'package:smart_waste_web/screens/tabs/records_tab.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 
 import '../utlis/colors.dart';
 import '../widgets/text_widget.dart';
@@ -21,7 +21,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool inrecords = true;
   bool initems = false;
-
   bool inqrcode = false;
   bool intickets = false;
 
@@ -89,23 +88,64 @@ class _HomeScreenState extends State<HomeScreen> {
                               .get()
                               .then((DocumentSnapshot documentSnapshot) async {
                             print('My code ${code.split('= ')[1]}');
+                            final data = documentSnapshot.data()
+                                as Map<String, dynamic>?;
+
                             showDialog(
                               context: context,
                               barrierDismissible: false,
                               builder: (context) {
                                 return AlertDialog(
-                                  content: TextWidget(
-                                    text: 'QR Code Scanned Successfully!',
-                                    fontSize: 48,
-                                    fontFamily: 'Bold',
+                                  contentPadding: const EdgeInsets.all(16.0),
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      TextWidget(
+                                        text: 'QR Code Scanned Successfully!',
+                                        fontSize: 18,
+                                        fontFamily: 'Bold',
+                                      ),
+                                      const SizedBox(height: 10),
+                                      TextWidget(
+                                        text: 'User name: ${data?['myname']}',
+                                        fontSize: 18,
+                                      ),
+                                      TextWidget(
+                                        text: 'Item name: ${data?['name']}',
+                                        fontSize: 18,
+                                      ),
+                                      TextWidget(
+                                        text:
+                                            'Equivalent Points: ${data?['pts']} pts',
+                                        fontSize: 18,
+                                      ),
+                                      TextWidget(
+                                        text:
+                                            'Date and Time: ${DateFormat.yMMMd().add_jm().format((data?['dateTime'] as Timestamp).toDate())}',
+                                        fontSize: 18,
+                                      ),
+                                    ],
                                   ),
                                   actions: <Widget>[
                                     MaterialButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text(
+                                        'Close',
+                                        style: TextStyle(
+                                            fontFamily: 'QRegular',
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                    MaterialButton(
                                       onPressed: () async {
-                                        showReceipt(documentSnapshot.data());
+                                        if (data != null) {
+                                          await downloadReceipt(data);
+                                        }
                                       },
                                       child: const Text(
-                                        'Generate Receipt',
+                                        'Download Receipt',
                                         style: TextStyle(
                                             fontFamily: 'QRegular',
                                             fontWeight: FontWeight.bold),
@@ -224,53 +264,33 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  showReceipt(data) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return AlertDialog(
-          content: Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                TextWidget(
-                  text: 'User name: ${data['myname']}',
-                  fontSize: 18,
-                ),
-                TextWidget(
-                  text: 'Item name: ${data['name']}',
-                  fontSize: 18,
-                ),
-                TextWidget(
-                  text: 'Equivalent Points: ${data['pts']} pts',
-                  fontSize: 18,
-                ),
-                TextWidget(
-                  text:
-                      'Date and Time: ${DateFormat.yMMMd().add_jm().format(data['dateTime'].toDate())}',
-                  fontSize: 18,
-                ),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            MaterialButton(
-              onPressed: () async {
-                Navigator.pop(context);
-              },
-              child: const Text(
-                'Close',
-                style: TextStyle(
-                    fontFamily: 'QRegular', fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        );
-      },
+  Future<void> downloadReceipt(Map<String, dynamic> data) async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text('User name: ${data['myname']}',
+                  style: pw.TextStyle(fontSize: 18)),
+              pw.Text('Item name: ${data['name']}',
+                  style: pw.TextStyle(fontSize: 18)),
+              pw.Text('Equivalent Points: ${data['pts']} pts',
+                  style: pw.TextStyle(fontSize: 18)),
+              pw.Text(
+                  'Date and Time: ${DateFormat.yMMMd().add_jm().format((data['dateTime'] as Timestamp).toDate())}',
+                  style: pw.TextStyle(fontSize: 18)),
+            ],
+          );
+        },
+      ),
+    );
+
+    await Printing.sharePdf(
+      bytes: await pdf.save(),
+      filename: 'receipt.pdf',
     );
   }
 }

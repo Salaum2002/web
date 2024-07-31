@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_waste_web/screens/tabs/user_records_page.dart';
 import 'package:smart_waste_web/widgets/text_widget.dart';
+import 'package:intl/intl.dart'; // Import this for formatting date and time
 
 class RecordsTab extends StatelessWidget {
   const RecordsTab({super.key});
@@ -31,7 +32,7 @@ class RecordsTab extends StatelessWidget {
             child: DataTable(
               showCheckboxColumn: false,
               border: TableBorder.all(),
-              columnSpacing: 125,
+              columnSpacing: 100, // Adjusted for new column
               columns: [
                 DataColumn(
                   label: TextWidget(
@@ -57,6 +58,13 @@ class RecordsTab extends StatelessWidget {
                 DataColumn(
                   label: TextWidget(
                     text: 'Equivalent Points',
+                    fontSize: 18,
+                    fontFamily: 'Bold',
+                  ),
+                ),
+                DataColumn(
+                  label: TextWidget(
+                    text: 'Date and Time',
                     fontSize: 18,
                     fontFamily: 'Bold',
                   ),
@@ -101,6 +109,17 @@ class RecordsTab extends StatelessWidget {
                         DataCell(
                           TextWidget(
                             text: '${data.docs[i]['pts']} pts',
+                            fontSize: 14,
+                            fontFamily: 'Medium',
+                            color: Colors.grey,
+                          ),
+                        ),
+                        DataCell(
+                          TextWidget(
+                            text: DateFormat.yMMMd().add_jm().format(
+                                  (data.docs[i]['dateTime'] as Timestamp)
+                                      .toDate(),
+                                ),
                             fontSize: 14,
                             fontFamily: 'Medium',
                             color: Colors.grey,

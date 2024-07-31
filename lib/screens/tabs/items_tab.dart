@@ -93,11 +93,11 @@ class _ItemsTabState extends State<ItemsTab> {
                   ),
                   DataColumn(
                     label: TextWidget(
-                        text: 'Item Name', fontSize: 18, fontFamily: 'Bold'),
+                        text: 'Money', fontSize: 18, fontFamily: 'Bold'),
                   ),
                   DataColumn(
                     label: TextWidget(
-                        text: 'Required Points',
+                        text: 'Equivalent Points',
                         fontSize: 18,
                         fontFamily: 'Bold'),
                   ),
@@ -167,7 +167,7 @@ class _ItemsTabState extends State<ItemsTab> {
                               ),
                               const SizedBox(width: 10),
                               ButtonWidget(
-                                color: Colors.orange,
+                                color: const Color.fromARGB(206, 70, 228, 131),
                                 height: 35,
                                 width: 125,
                                 label: 'Edit',
@@ -175,7 +175,7 @@ class _ItemsTabState extends State<ItemsTab> {
                                   showEditDialog(
                                       data.docs[i].id,
                                       data.docs[i]['name'],
-                                      data.docs[i]['required_points']);
+                                      data.docs[i]['points']);
                                 },
                               ),
                               const SizedBox(width: 10),
@@ -229,16 +229,16 @@ class AddItemDialog extends StatelessWidget {
             children: [
               TextFieldWidget(
                 controller: name,
-                label: 'Item Name:',
+                label: 'Money:',
               ),
               const SizedBox(height: 10),
               TextFieldWidget(
                 controller: pts,
-                label: 'Required Points:',
+                label: 'Equivalent Points:',
               ),
               const SizedBox(height: 10),
               ButtonWidget(
-                color: const Color.fromARGB(255, 185, 245, 33),
+                color: const Color.fromARGB(255, 33, 243, 114),
                 height: 45,
                 width: 150,
                 label: 'Add',
@@ -291,12 +291,12 @@ class EditItemDialog extends StatelessWidget {
             children: [
               TextFieldWidget(
                 controller: name,
-                label: 'Item Name:',
+                label: 'Money:',
               ),
               const SizedBox(height: 10),
               TextFieldWidget(
                 controller: pts,
-                label: 'Required Points:',
+                label: 'Equivalent Points:',
               ),
               const SizedBox(height: 10),
               ButtonWidget(
@@ -304,19 +304,19 @@ class EditItemDialog extends StatelessWidget {
                 height: 45,
                 width: 150,
                 label: 'Update',
-                onPressed: () {
+                onPressed: () async {
                   if (name.text.isEmpty || pts.text.isEmpty) {
                     showToast('Please fill all fields.');
                     return;
                   }
                   try {
                     int points = int.parse(pts.text);
-                    FirebaseFirestore.instance
+                    await FirebaseFirestore.instance
                         .collection('Items')
                         .doc(itemId)
                         .update({
                       'name': name.text,
-                      'required_points': points,
+                      'points': points,
                     });
                     showToast('Item updated successfully!');
                     Navigator.pop(context);
